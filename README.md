@@ -12,8 +12,7 @@ Projet microservices pour la gestion des déploiements d’applications, réalis
 2. [Conception](#conception)
 3. [Architecture](#architecture)
 4. [Microservices](#microservices)
-5. [Installation et exécution](#installation-et-exécution)
-6. [API Documentation](#api-documentation)
+5. [API Documentation](#api-documentation)
 
 ---
 
