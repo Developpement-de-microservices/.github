@@ -1,0 +1,71 @@
+services:
+  nginx:
+    image: nginx:stable
+    container_name: proxy
+    ports:
+      - "8080:80"
+    volumes:
+      - proxy_data:/etc/nginx/conf.d:ro
+    networks:
+      - sae401_net
+
+  users_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/users_service.git
+      dockerfile: app/Dockerfile
+    container_name: users_service
+    volumes:
+      - users_data:/app/data
+    networks:
+      - sae401_net
+
+  applications_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/app_service.git
+      dockerfile: app/Dockerfile
+    container_name: applications_service
+    volumes:
+      - applications_data:/app/data
+    networks:
+      - sae401_net
+
+  environments_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/env_service.git
+      dockerfile: app/Dockerfile
+    container_name: environments_service
+    volumes:
+      - environments_data:/app/data
+    networks:
+      - sae401_net
+
+  deployments_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/deploy_service.git
+      dockerfile: app/Dockerfile
+    container_name: deployments_service
+    volumes:
+      - deployments_data:/app/data
+    networks:
+      - sae401_net
+
+  events_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/event_service.git
+      dockerfile: app/Dockerfile
+    container_name: events_service
+    volumes:
+      - events_data:/app/data
+    networks:
+      - sae401_net
+
+networks:
+  sae401_net:
+
+volumes:
+  proxy_data:
+  users_data:
+  applications_data:
+  environments_data:
+  deployments_data:
+  events_data:
