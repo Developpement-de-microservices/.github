@@ -44,10 +44,11 @@ services:
       context: https://github.com/Developpement-de-microservices/deploy_service.git
       dockerfile: app/Dockerfile
     container_name: deployments_service
-    volumes:
-      - deployments_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_deployer@db:27017/deployer_db?authSource=admin
     networks:
       - sae401_net
+      - deploy_db_private
 
   events_service:
     build:
@@ -59,8 +60,23 @@ services:
     networks:
       - sae401_net
 
+  db_deploy_service:
+    image: mongo:6.0
+    container_name: deploy_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_deployer
+    networks:
+      - deploy_db_private
+    volumes:
+      - deployments_data:/data/db
+
 networks:
   sae401_net:
+  deploy_db_private:
+    driver: bridge
+    internal: true
 
 volumes:
   proxy_data:
