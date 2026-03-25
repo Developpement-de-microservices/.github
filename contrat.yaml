@@ -11,7 +11,7 @@ info:
     Tristan Arnaiz
 
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8080/
     description: Proxy HTTP principal
 
 tags:
@@ -523,6 +523,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '400':
+          description: Champ non valide
 
   /events/{eventId}:
     parameters:
@@ -538,6 +540,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '404':
+          description: Element non trouvé
 
 components:
   securitySchemes:
