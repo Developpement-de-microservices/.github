@@ -2,7 +2,7 @@ FROM nginx:stable-alpine3.23-perl
 
 RUN rm /etc/nginx/conf.d/default.conf
 
-COPY proxy.conf /etc/nginx/conf.d/proxy.conf
+COPY proxy.conf /etc/nginx/conf.d/default.conf
 
 RUN apk update && apk add --no-cache curl
 
