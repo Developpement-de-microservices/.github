@@ -84,7 +84,6 @@ paths:
       tags: [Auth]
       summary: Vérifier la validité d'un token
       operationId: verifyToken
-      security: []
       responses:
         '200':
           description: Token valide
