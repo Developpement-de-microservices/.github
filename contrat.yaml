@@ -78,7 +78,26 @@ paths:
           description: Identifiants / mot de passe invalide
         '403':
           description: Compte désactivé
-
+      
+  /auth/verify:
+    post:
+      tags: [Auth]
+      summary: Vérifier la validité d'un token
+      operationId: verifyToken
+      security: []
+      responses:
+        '200':
+          description: Token valide
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    examples: [true]
+        '401':
+          description: Token manquant ou invalide
 
 
   /users:
