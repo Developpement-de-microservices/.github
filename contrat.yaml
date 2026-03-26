@@ -116,6 +116,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedUsers'
+        '401':
+         description: Identifiants / mot de passe invalide
+         
     post:
       tags: [Users]
       summary: Créer un utilisateur
@@ -133,6 +136,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+         description: Identifiants / mot de passe invalide
         '400':
           description: Champs manquants
 
@@ -150,6 +155,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+         description: Identifiants / mot de passe invalide
         '404':
           description: Utilisateur non trouvé
 
@@ -170,6 +177,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '400':
+         description: Champs non valide
+        '401':
+         description: Identifiants / mot de passe invalide
+        '404':
+         description: Utilisateur non trouvé
     delete:
       tags: [Users]
       summary: Supprimer un utilisateur
@@ -181,6 +194,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MutationResult'
+        '401':
+         description: Identifiants / mot de passe invalide
         '404':
          description: Utilisateur non trouvé
 
