@@ -199,7 +199,7 @@ paths:
         '404':
          description: Utilisateur non trouvé
 
-  /applications:
+  /apps:
     get:
       tags: [Applications]
       summary: Lister les applications avec pagination
@@ -234,7 +234,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Application'
 
-  /applications/{applicationId}:
+  /apps/{applicationId}:
     parameters:
       - $ref: '#/components/parameters/ApplicationId'
     get:
@@ -277,7 +277,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MutationResult'
 
-  /applications/{applicationId}/versions:
+  /apps/{applicationId}/versions:
     parameters:
       - $ref: '#/components/parameters/ApplicationId'
     get:
@@ -312,7 +312,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Version'
 
-  /applications/{applicationId}/versions/{versionId}:
+  /apps/{applicationId}/versions/{versionId}:
     parameters:
       - $ref: '#/components/parameters/ApplicationId'
       - $ref: '#/components/parameters/VersionId'
