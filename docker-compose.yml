@@ -45,7 +45,7 @@ services:
       dockerfile: app/Dockerfile
     container_name: deployments_service
     environment:
-      - MONGO_URI=mongodb://admin:bonjour_deployer@db:27017/deployer_db?authSource=admin
+      - MONGO_URI=mongodb://admin:bonjour_deployer@db_deploy_service:27017/deployer_db?authSource=admin
     networks:
       - sae401_net
       - deploy_db_private
