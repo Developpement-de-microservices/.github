@@ -1,11 +1,13 @@
 services:
   nginx:
-    image: nginx:stable
+    build:
+        context: https://github.com/Developpement-de-microservices/.github.git
+        dockerfile: Dockerfile
     container_name: proxy
     ports:
       - "8080:80"
     volumes:
-      - proxy_data:/etc/nginx/conf.d:ro
+      - proxy_data:/etc/nginx/conf.d
     networks:
       - sae401_net
 
