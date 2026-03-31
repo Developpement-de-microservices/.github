@@ -26,6 +26,8 @@ services:
       context: https://github.com/Developpement-de-microservices/app_service.git
       dockerfile: app/Dockerfile
     container_name: applications_service
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_app@db_app_service:27017/app_db?authSource=admin
     volumes:
       - applications_data:/app/data
     networks:
@@ -73,6 +75,19 @@ services:
       - deploy_db_private
     volumes:
       - deployments_data:/data/db
+
+  db_app_service:
+    image: mongo:6.0
+    container_name: app_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_app
+    networks:
+      - sae401_net
+      - deploy_db_private
+    volumes:
+      - applications_data:/data/db
 
 networks:
   sae401_net:
