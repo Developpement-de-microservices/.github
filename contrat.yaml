@@ -503,6 +503,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedDeployments'
+        '401':
+         description: Token manquant ou invalide
     post:
       tags: [Deployments]
       summary: Déclencher un déploiement
