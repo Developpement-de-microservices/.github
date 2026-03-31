@@ -75,7 +75,7 @@ paths:
         '400':
           description: Champs manquant
         '401':
-          description: Identifiants / mot de passe invalide
+          description: Identifiant / Mot de passe invalide
         '403':
           description: Compte désactivé
       
@@ -117,7 +117,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUsers'
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
          
     post:
       tags: [Users]
@@ -137,7 +137,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
         '400':
           description: Champs manquants
 
@@ -156,7 +156,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
         '404':
           description: Utilisateur non trouvé
 
@@ -180,7 +180,7 @@ paths:
         '400':
          description: Champs non valide
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
         '404':
          description: Utilisateur non trouvé
     delete:
@@ -195,7 +195,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MutationResult'
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
         '404':
          description: Utilisateur non trouvé
 
@@ -374,7 +374,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedEnvironments'
         '401':
-          description: Identifiants / mot de passe invalide
+          description: Token manquant ou invalide
     post:
       tags: [Environments]
       summary: Créer un environnement
@@ -395,7 +395,7 @@ paths:
         '400':
           description: Name / type is required
         '401':
-          description: Identifiants / mot de passe invalide
+          description: Token manquant ou invalide
 
   /environments/{environmentId}:
     parameters:
@@ -412,7 +412,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Environment'
         '401':
-          description: Identifiants / mot de passe invalide
+          description: Token manquant ou invalide
     patch:
       tags: [Environments]
       summary: Modifier un environnement
@@ -431,7 +431,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Environment'
         '401':
-          description: Identifiants / mot de passe invalide
+          description: Token manquant ou invalide
     delete:
       tags: [Environments]
       summary: Supprimer un environnement
@@ -446,7 +446,7 @@ paths:
         '400':
           description: ID introuvable
         '401':
-          description: Identifiants / mot de passe invalide
+          description: Token manquant ou invalide
 
   /deployments:
     get:
@@ -551,9 +551,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedEvents'
         '401':
-         description: Identifiants / mot de passe invalide
-        '404':
-         description: Déploiement non trouvé
+         description: Token manquant ou invalide
 
   /events:
     get:
@@ -573,7 +571,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedEvents'
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
     post:
       tags: [Events]
       summary: Enregistrer un événement
@@ -594,7 +592,7 @@ paths:
         '400':
           description: Champ non valide
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
         '404':
          description: Déploiement non trouvé
 
@@ -613,7 +611,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Event'
         '401':
-         description: Identifiants / mot de passe invalide
+         description: Token manquant ou invalide
         '404':
          description: Evenement non trouvé
 
