@@ -1,18 +1,17 @@
 openapi: 3.1.0
 info:
   title: SAE401 Plateforme de gestion des déploiements d'applications
-  version: "1.0"
+  version: "1.2"
   description: >-
     Projet microservices : Plateforme de gestion des déploiements dʼapplications.
-    Groupe : 
-    Esteban Heschung
-    Florent Leclerc
-    Quentin Cormerais
-    Tristan Arnaiz
+    Fusion totale du contrat global et de l'implémentation réelle du service Apps (port 5001).
+    Groupe : Esteban Heschung, Florent Leclerc, Quentin Cormerais, Tristan Arnaiz.
 
 servers:
   - url: http://localhost:8080/
     description: Proxy HTTP principal
+  - url: http://localhost:5001/
+    description: Accès direct au microservice Apps
 
 tags:
   - name: Auth
@@ -20,7 +19,7 @@ tags:
   - name: Users
     description: Gestion des utilisateurs et des rôles.
   - name: Applications
-    description: Gestion des applications et de leurs versions.
+    description: Gestion des applications et de leurs versions (Service Apps).
   - name: Environments
     description: Gestion des environnements de déploiement.
   - name: Deployments
@@ -32,7 +31,7 @@ security:
   - bearerAuth: []
 
 paths:
-
+  # --- AUTH ---
   /auth/login:
     post:
       tags: [Auth]
@@ -63,7 +62,7 @@ paths:
           description: Identifiant / Mot de passe invalide
         '403':
           description: Compte désactivé
-      
+
   /auth/verify:
     post:
       tags: [Auth]
@@ -83,6 +82,7 @@ paths:
         '401':
           description: Token manquant ou invalide
 
+  # --- USERS ---
   /users/health:
     get:
       tags: [Users]
@@ -114,8 +114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUsers'
         '401':
-         description: Token manquant ou invalide
-         
+          description: Token manquant ou invalide
     post:
       tags: [Users]
       summary: Créer un utilisateur
@@ -134,7 +133,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '400':
           description: Champs manquants
 
@@ -153,10 +152,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '404':
           description: Utilisateur non trouvé
-
     patch:
       tags: [Users]
       summary: Modifier un utilisateur
@@ -175,11 +173,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-         description: Champs non valide
+          description: Champs non valide
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '404':
-         description: Utilisateur non trouvé
+          description: Utilisateur non trouvé
     delete:
       tags: [Users]
       summary: Supprimer un utilisateur
@@ -192,40 +190,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/MutationResult'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '404':
-         description: Utilisateur non trouvé
+          description: Utilisateur non trouvé
 
+  # --- APPLICATIONS (Microservice Flask Port 5001) ---
   /apps/health:
     get:
       tags: [Applications]
-      summary: Vérifier la santé de l'API application
+      summary: État de santé du service Apps
       operationId: getHealthApps
       security: []
       responses:
         '200':
-          description: Santé de l'API
+          description: Service opérationnel
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+
   /apps:
     get:
       tags: [Applications]
-      summary: Lister les applications avec pagination
-      operationId: listApplications
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/Search'
-        - $ref: '#/components/parameters/OwnerIdFilter'
+      summary: Lister les applications (Dictionnaire)
+      description: Retourne un dictionnaire complet des applications indexées par leur UUID.
       responses:
         '200':
-          description: Liste paginée des applications
+          description: Dictionnaire des applications
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedApplications'
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Application'
+        '401':
+          $ref: '#/components/responses/AuthError'
     post:
       tags: [Applications]
       summary: Créer une application
@@ -235,29 +234,36 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationCreate'
+              $ref: '#/components/schemas/ApplicationCreateStrict'
       responses:
         '201':
-          description: Application créée
+          description: Application créée avec succès
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Application'
+                $ref: '#/components/schemas/AppMutationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
-  /apps/{applicationId}:
+  /apps/{app_id}:
     parameters:
-      - $ref: '#/components/parameters/ApplicationId'
+      - name: app_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
     get:
       tags: [Applications]
-      summary: Consulter une application
+      summary: Détails d'une application
       operationId: getApplicationById
       responses:
         '200':
-          description: Application trouvée
+          description: Succès
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Application'
+        '404':
+          description: Pas d'application avec cet ID
     patch:
       tags: [Applications]
       summary: Modifier une application
@@ -267,76 +273,94 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplicationUpdate'
+              $ref: '#/components/schemas/AppUpdate'
       responses:
         '200':
-          description: Application modifiée
+          description: Modification réussie
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Application'
+                $ref: '#/components/schemas/AppMutationResponse'
+        '404':
+          description: Non trouvé
     delete:
       tags: [Applications]
-      summary: Supprimer une application
+      summary: Supprimer une application et ses versions
       operationId: deleteApplication
       responses:
         '200':
-          description: Application supprimée
+          description: Suppression réussie
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MutationResult'
+                $ref: '#/components/schemas/GenericDeleteResponse'
+        '404':
+          description: Application non trouvée
 
-  /apps/{applicationId}/versions:
+  /apps/{app_id}/versions:
     parameters:
-      - $ref: '#/components/parameters/ApplicationId'
+      - name: app_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
     get:
       tags: [Applications]
-      summary: Lister les versions d'une application avec pagination
+      summary: Lister les versions d'une application (Dictionnaire)
       operationId: listApplicationVersions
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
-          description: Liste paginée des versions
+          description: Dictionnaire des versions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedVersions'
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Version'
+        '404':
+          description: Application non trouvée
     post:
       tags: [Applications]
-      summary: Créer une version pour une application
+      summary: Ajouter une version
       operationId: createApplicationVersion
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VersionCreate'
+              $ref: '#/components/schemas/VersionCreateStrict'
       responses:
         '201':
           description: Version créée
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
+                $ref: '#/components/schemas/VersionMutationResponse'
+        '404':
+          description: Application non trouvée
 
-  /apps/{applicationId}/versions/{versionId}:
+  /apps/{app_id}/versions/{version_id}:
     parameters:
-      - $ref: '#/components/parameters/ApplicationId'
-      - $ref: '#/components/parameters/VersionId'
+      - name: app_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: version_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
     get:
       tags: [Applications]
-      summary: Consulter une version
+      summary: Détails d'une version
       operationId: getVersionById
       responses:
         '200':
-          description: Version trouvée
+          description: Succès
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
+        '404':
+          description: Application ou Version non trouvée
     patch:
       tags: [Applications]
       summary: Modifier une version
@@ -353,19 +377,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Version'
+                $ref: '#/components/schemas/VersionMutationResponse'
+        '404':
+          description: Version non trouvée
     delete:
       tags: [Applications]
-      summary: Supprimer une version
+      summary: Supprimer une version spécifique
       operationId: deleteVersion
       responses:
         '200':
-          description: Version supprimée
+          description: Suppression réussie
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MutationResult'
+                $ref: '#/components/schemas/GenericDeleteResponse'
+        '404':
+          description: Version non trouvée
 
+  # --- ENVIRONMENTS ---
   /environments/health:
     get:
       tags: [Environments]
@@ -471,7 +500,7 @@ paths:
         '401':
           description: Token manquant ou invalide
 
-
+  # --- DEPLOYMENTS ---
   /deployments/health:
     get:
       tags: [Deployments]
@@ -504,7 +533,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedDeployments'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
     post:
       tags: [Deployments]
       summary: Déclencher un déploiement
@@ -525,7 +554,7 @@ paths:
         '400':
           description: Champs obligatoires manquants
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
 
   /deployments/{deploymentId}:
     parameters:
@@ -564,7 +593,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Deployment'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '404':
           description: Déploiement non trouvé
 
@@ -583,7 +612,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Deployment'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
 
   /deployments/{deploymentId}/events:
     get:
@@ -602,8 +631,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedEvents'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
 
+  # --- EVENTS ---
   /events/health:
     get:
       tags: [Events]
@@ -635,7 +665,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedEvents'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
     post:
       tags: [Events]
       summary: Enregistrer un événement
@@ -656,9 +686,9 @@ paths:
         '400':
           description: Champ non valide
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '404':
-         description: Déploiement non trouvé
+          description: Déploiement non trouvé
 
   /events/{eventId}:
     parameters:
@@ -675,9 +705,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Event'
         '401':
-         description: Token manquant ou invalide
+          description: Token manquant ou invalide
         '404':
-         description: Evenement non trouvé
+          description: Evenement non trouvé
 
 components:
   securitySchemes:
@@ -685,6 +715,33 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Erreur de requête (JSON manquant ou champ obligatoire absent)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+    AuthError:
+      description: Erreur d'authentification
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string, example: "Non autorisé" }
+    InternalError:
+      description: Erreur serveur (Save failed ou Auth service down)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              message: { type: string }
 
   parameters:
     Page:
@@ -827,7 +884,7 @@ components:
           examples: [ok]
         service:
           type: string
-          examples: [Auth]
+          examples: [Apps]
         timestamp:
           type: string
           format: date-time
@@ -839,11 +896,9 @@ components:
       properties:
         username:
           type: string
-          examples: [admin]
         password:
           type: string
           format: password
-          minLength: 1
       required: [password, username]
 
     LoginResponse:
@@ -852,7 +907,6 @@ components:
       properties:
         accessToken:
           type: string
-          description: "Jeton JWT à utiliser dans Authorization: Bearer"
         user:
           $ref: '#/components/schemas/User'
       required: [accessToken, user]
@@ -865,7 +919,6 @@ components:
           type: boolean
         message:
           type: string
-          examples: [Ressource supprimée avec succès]
         id:
           type: string
           format: uuid
@@ -879,223 +932,134 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-        username:
-          type: string
-          examples: [jean]
-        email:
-          type: string
-          format: email
-        role:
-          $ref: '#/components/schemas/Role'
-        active:
-          type: boolean
-          default: true
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+        id: { type: string, format: uuid }
+        username: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+        active: { type: boolean, default: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
       required: [id, username, email, role, active, createdAt, updatedAt]
 
     UserCreate:
       type: object
       additionalProperties: false
       properties:
-        username:
-          type: string
-          examples: [bob]
-          minLength: 3
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-          minLength: 8
-        role:
-          $ref: '#/components/schemas/Role'
-        active:
-          type: boolean
-          default: true
+        username: { type: string, minLength: 3 }
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        role: { $ref: '#/components/schemas/Role' }
+        active: { type: boolean, default: true }
       required: [username, email, password]
 
     UserUpdate:
       type: object
       additionalProperties: false
       properties:
-        username:
-          type: string
-          examples: [jean]
-          minLength: 3
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-          minLength: 8
-        role:
-          $ref: '#/components/schemas/Role'
-        active:
-          type: boolean
+        username: { type: string, minLength: 3 }
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        role: { $ref: '#/components/schemas/Role' }
+        active: { type: boolean }
       minProperties: 1
 
+    # --- APPS (Sync implementation) ---
     Application:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: string
-          examples: [appId]
-          format: uuid
-        name:
-          type: string
-          examples: [The best app]
-        description:
-          examples: [Une bonne app.]
-          type: string
-          
-        repositoryUrl:
-          type: string
-          format: uri
-          
-        ownerId:
-          type: string
-          format: uuid
-          
-        latestVersion:
-          type: string
-          examples: [1.2.3]
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        repositoryUrl: { type: string, format: uri }
+        ownerId: { type: string, format: uuid }
+        latestVersion: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
       required: [id, name, createdAt, updatedAt]
 
-    ApplicationCreate:
+    ApplicationCreateStrict:
       type: object
       additionalProperties: false
-      properties:
-        name:
-          type: string
-          examples: [appName]
-          minLength: 2
-        description:
-          examples: [The best app.]
-          type: string
-          
-        repositoryUrl:
-          type: string
-          format: uri
-          
-        ownerId:
-          type: string
-          format: uuid
-          
       required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        repositoryUrl: { type: string, format: uri }
+        ownerId: { type: string, format: uuid }
+        latestVersion: { type: string }
 
-    ApplicationUpdate:
+    AppUpdate:
       type: object
       additionalProperties: false
       properties:
-        name:
-          type: string
-          examples: [Une app terrible]
-          minLength: 2
-        description:
-          type: string
-          
-        repositoryUrl:
-          type: string
-          examples: [La description terrible.]
-          format: uri
-          
-        ownerId:
-          type: string
-          format: uuid
-          
-      minProperties: 1
+        name: { type: string }
+        description: { type: string }
+        repositoryUrl: { type: string, format: uri }
+        ownerId: { type: string, format: uuid }
+        latestVersion: { type: string }
+
+    AppMutationResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        message: { type: string }
+        app: { $ref: '#/components/schemas/Application' }
 
     Version:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-        applicationId:
-          type: string
-          format: uuid
-        version:
-          type: string
-          examples: [1.0.0]
-        changelog:
-          examples: ["Ajout d'un event."]
-          type: string
-          
-        versionUrl:
-          type: string
-          format: uri
-          
-        status:
-          type: string
-          enum: [DRAFT, RELEASED, ARCHIVED]
-          examples: [RELEASED]
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+        id: { type: string, format: uuid }
+        applicationId: { type: string, format: uuid }
+        status: { type: string }
+        version: { type: string }
+        changelog: { type: string }
+        versionUrl: { type: string, format: uri }
+        ownerId: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
       required: [id, applicationId, version, status, createdAt, updatedAt]
 
-    VersionCreate:
+    VersionCreateStrict:
       type: object
       additionalProperties: false
-      properties:
-        version:
-          type: string
-          examples: [1.0.0]
-        changelog:
-          examples: [Update !]
-          type: string
-          
-        versionUrl:
-          type: string
-          format: uri
-          
-        status:
-          type: string
-          enum: [DRAFT, RELEASED, ARCHIVED]
-          default: DRAFT
       required: [version]
+      properties:
+        version: { type: string }
+        status: { type: string, default: "DRAFT" }
+        changelog: { type: string }
+        versionUrl: { type: string, format: uri }
+        ownerId: { type: string }
 
     VersionUpdate:
       type: object
       additionalProperties: false
       properties:
-        version:
-          type: string
-          examples: [1.1.1]
-        changelog:
-          examples: [Version update]
-          type: string
-          
-        artifactUrl:
-          type: string
-          format: uri
-          
-        status:
-          type: string
-          enum: [DRAFT, RELEASED, ARCHIVED]
-      minProperties: 1
+        status: { type: string }
+        version: { type: string }
+        changelog: { type: string }
+        versionUrl: { type: string, format: uri }
+        ownerId: { type: string }
 
+    VersionMutationResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        applicationId: { type: string }
+        message: { type: string }
+        version: { $ref: '#/components/schemas/Version' }
+
+    GenericDeleteResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        message: { type: string }
+
+    # --- ENVIRONMENTS ---
     EnvironmentType:
       type: string
       enum: [development, staging, production]
@@ -1104,76 +1068,39 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-          examples: [staging-eu-west]
-        type:
-          $ref: '#/components/schemas/EnvironmentType'
-        description:
-          examples: [Good description about environments !]
-          type: string
-          
-        url:
-          type: string
-          format: uri
-          
-        active:
-          type: boolean
-          default: true
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/EnvironmentType' }
+        description: { type: string }
+        url: { type: string, format: uri }
+        active: { type: boolean, default: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
       required: [id, name, type, active, createdAt, updatedAt]
 
     EnvironmentCreate:
       type: object
       additionalProperties: false
       properties:
-        name:
-          type: string
-          examples: [Environnement génial]
-        type:
-          $ref: '#/components/schemas/EnvironmentType'
-        description:
-          examples: [Environnement très bien.]
-          type: string
-          
-        url:
-          type: string
-          format: uri
-          
-        active:
-          type: boolean
-          default: true
+        name: { type: string }
+        type: { $ref: '#/components/schemas/EnvironmentType' }
+        description: { type: string }
+        url: { type: string, format: uri }
+        active: { type: boolean, default: true }
       required: [name, type]
 
     EnvironmentUpdate:
       type: object
       additionalProperties: false
       properties:
-        name:
-          type: string
-          examples: [Update environnement]
-        type:
-          $ref: '#/components/schemas/EnvironmentType'
-        description:
-          type: string
-          examples: [Environnement changé]
-          
-        url:
-          type: string
-          format: uri
-          
-        active:
-          type: boolean
+        name: { type: string }
+        type: { $ref: '#/components/schemas/EnvironmentType' }
+        description: { type: string }
+        url: { type: string, format: uri }
+        active: { type: boolean }
       minProperties: 1
 
+    # --- DEPLOYMENTS ---
     DeploymentStatus:
       type: string
       enum: [PENDING, RUNNING, FAILED, DEPLOYED]
@@ -1182,82 +1109,40 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-        applicationId:
-          type: string
-          format: uuid
-        versionId:
-          type: string
-          format: uuid
-        environmentId:
-          type: string
-          format: uuid
-        status:
-          $ref: '#/components/schemas/DeploymentStatus'
-        initiatedBy:
-          type: string
-          format: uuid
-          
-        notes:
-          type: string
-          examples: ["Déploiement très important"]
-          
-        startedAt:
-          type: string
-          format: date-time
-          
-        finishedAt:
-          type: string
-          format: date-time
-          
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+        id: { type: string, format: uuid }
+        applicationId: { type: string, format: uuid }
+        versionId: { type: string, format: uuid }
+        environmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/DeploymentStatus' }
+        initiatedBy: { type: string, format: uuid }
+        notes: { type: string }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
       required: [id, applicationId, versionId, environmentId, status, createdAt, updatedAt]
 
     DeploymentCreate:
       type: object
       additionalProperties: false
       properties:
-        applicationId:
-          type: string
-          format: uuid
-        versionId:
-          type: string
-          format: uuid
-        environmentId:
-          type: string
-          format: uuid
-        notes:
-          type: string
-          examples: ["Déploiement long"]
-          
+        applicationId: { type: string, format: uuid }
+        versionId: { type: string, format: uuid }
+        environmentId: { type: string, format: uuid }
+        notes: { type: string }
       required: [applicationId, versionId, environmentId]
 
     DeploymentUpdate:
       type: object
       additionalProperties: false
       properties:
-        status:
-          $ref: '#/components/schemas/DeploymentStatus'
-        notes:
-          type: string
-          
-        startedAt:
-          type: string
-          format: date-time
-          
-        finishedAt:
-          type: string
-          format: date-time
-          
+        status: { $ref: '#/components/schemas/DeploymentStatus' }
+        notes: { type: string }
+        startedAt: { type: string, format: date-time }
+        finishedAt: { type: string, format: date-time }
       minProperties: 1
 
+    # --- EVENTS ---
     EventType:
       type: string
       enum: [DEPLOYMENT_STARTED, DEPLOYMENT_FINISHED, DEPLOYMENT_ERROR, ROLLBACK]
@@ -1266,141 +1151,63 @@ components:
       type: object
       additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-        deploymentId:
-          type: string
-          format: uuid
-        type:
-          $ref: '#/components/schemas/EventType'
-        message:
-          type: string
-          examples: [Working]
-        data:
-          type: object
-          additionalProperties: true
-          
-        initiatedBy:
-          type: string
-          format: uuid
-          
-        createdAt:
-          type: string
-          format: date-time
+        id: { type: string, format: uuid }
+        deploymentId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/EventType' }
+        message: { type: string }
+        data: { type: object, additionalProperties: true }
+        initiatedBy: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
       required: [id, deploymentId, type, message, createdAt]
 
     EventCreate:
       type: object
       additionalProperties: false
       properties:
-        deploymentId:
-          type: string
-          format: uuid
-        type:
-          $ref: '#/components/schemas/EventType'
-        message:
-          type: string
-          examples: [started]
-        data:
-          type: object
-          additionalProperties: true
-        initiatedBy:
-          type: string
-          format: uuid
-          
+        deploymentId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/EventType' }
+        message: { type: string }
+        data: { type: object, additionalProperties: true }
+        initiatedBy: { type: string, format: uuid }
       required: [deploymentId, type, message]
 
+    # --- PAGINATION ---
     PaginatedMeta:
       type: object
       additionalProperties: false
       properties:
-        page:
-          type: integer
-          minimum: 1
-        pageSize:
-          type: integer
-          minimum: 1
-        totalItems:
-          type: integer
-          minimum: 0
-        totalPages:
-          type: integer
-          minimum: 0
-        hasNext:
-          type: boolean
-        hasPrevious:
-          type: boolean
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1 }
+        totalItems: { type: integer, minimum: 0 }
+        totalPages: { type: integer, minimum: 0 }
+        hasNext: { type: boolean }
+        hasPrevious: { type: boolean }
       required: [page, pageSize, totalItems, totalPages, hasNext, hasPrevious]
 
     PaginatedUsers:
       type: object
-      additionalProperties: false
       properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        meta:
-          $ref: '#/components/schemas/PaginatedMeta'
-      required: [items, meta]
-
-    PaginatedApplications:
-      type: object
-      additionalProperties: false
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Application'
-        meta:
-          $ref: '#/components/schemas/PaginatedMeta'
-      required: [items, meta]
-
-    PaginatedVersions:
-      type: object
-      additionalProperties: false
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Version'
-        meta:
-          $ref: '#/components/schemas/PaginatedMeta'
+        items: { type: array, items: { $ref: '#/components/schemas/User' } }
+        meta: { $ref: '#/components/schemas/PaginatedMeta' }
       required: [items, meta]
 
     PaginatedEnvironments:
       type: object
-      additionalProperties: false
       properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Environment'
-        meta:
-          $ref: '#/components/schemas/PaginatedMeta'
+        items: { type: array, items: { $ref: '#/components/schemas/Environment' } }
+        meta: { $ref: '#/components/schemas/PaginatedMeta' }
       required: [items, meta]
 
     PaginatedDeployments:
       type: object
-      additionalProperties: false
       properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Deployment'
-        meta:
-          $ref: '#/components/schemas/PaginatedMeta'
+        items: { type: array, items: { $ref: '#/components/schemas/Deployment' } }
+        meta: { $ref: '#/components/schemas/PaginatedMeta' }
       required: [items, meta]
 
     PaginatedEvents:
       type: object
-      additionalProperties: false
       properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Event'
-        meta:
-          $ref: '#/components/schemas/PaginatedMeta'
+        items: { type: array, items: { $ref: '#/components/schemas/Event' } }
+        meta: { $ref: '#/components/schemas/PaginatedMeta' }
       required: [items, meta]
