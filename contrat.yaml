@@ -15,8 +15,6 @@ servers:
     description: Proxy HTTP principal
 
 tags:
-  - name: Health
-    description: Vérification de disponibilité et de santé des services.
   - name: Auth
     description: Connexion et émission du jeton JWT.
   - name: Users
@@ -34,19 +32,6 @@ security:
   - bearerAuth: []
 
 paths:
-  /health:
-    get:
-      tags: [Health]
-      summary: Vérifier la santé de l'API
-      operationId: getHealth
-      security: []
-      responses:
-        '200':
-          description: Santé de l'API
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
 
   /auth/login:
     post:
@@ -98,7 +83,19 @@ paths:
         '401':
           description: Token manquant ou invalide
 
-
+  /users/health:
+    get:
+      tags: [Users]
+      summary: Vérifier la santé de l'API Users
+      operationId: getHealthUsers
+      security: []
+      responses:
+        '200':
+          description: Santé de l'API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /users:
     get:
       tags: [Users]
@@ -199,6 +196,19 @@ paths:
         '404':
          description: Utilisateur non trouvé
 
+  /apps/health:
+    get:
+      tags: [Applications]
+      summary: Vérifier la santé de l'API application
+      operationId: getHealthApps
+      security: []
+      responses:
+        '200':
+          description: Santé de l'API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /apps:
     get:
       tags: [Applications]
@@ -356,6 +366,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/MutationResult'
 
+  /environments/health:
+    get:
+      tags: [Environments]
+      summary: Vérifier la santé de l'API environements
+      operationId: getHealthEnv
+      security: []
+      responses:
+        '200':
+          description: Santé de l'API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /environments:
     get:
       tags: [Environments]
@@ -448,6 +471,20 @@ paths:
         '401':
           description: Token manquant ou invalide
 
+
+  /deployments/health:
+    get:
+      tags: [Deployments]
+      summary: Vérifier la santé de l'API déploiements
+      operationId: getHealthDeployments
+      security: []
+      responses:
+        '200':
+          description: Santé de l'API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /deployments:
     get:
       tags: [Deployments]
@@ -553,6 +590,19 @@ paths:
         '401':
          description: Token manquant ou invalide
 
+  /events/health:
+    get:
+      tags: [Events]
+      summary: Vérifier la santé de l'API événements
+      operationId: getHealthEvents
+      security: []
+      responses:
+        '200':
+          description: Santé de l'API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /events:
     get:
       tags: [Events]
@@ -764,13 +814,10 @@ components:
         service:
           type: string
           examples: [Auth]
-        version:
-          type: string
-          examples: [1.0.0]
         timestamp:
           type: string
           format: date-time
-      required: [status, service, version, timestamp]
+      required: [status, service, timestamp]
 
     LoginRequest:
       type: object
