@@ -28,10 +28,9 @@ services:
     container_name: applications_service
     environment:
       - MONGO_URI=mongodb://admin:bonjour_app@db_app_service:27017/app_db?authSource=admin
-    volumes:
-      - applications_data:/app/data
     networks:
       - sae401_net
+      - apps_db_private
 
   environments_service:
     build:
@@ -59,10 +58,11 @@ services:
       context: https://github.com/Developpement-de-microservices/event_service.git
       dockerfile: app/Dockerfile
     container_name: events_service
-    volumes:
-      - events_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_events@db_events_service:27017/deployer_db?authSource=admin
     networks:
       - sae401_net
+      - event_db_private
 
   db_deploy_service:
     image: mongo:6.0
@@ -78,20 +78,37 @@ services:
 
   db_app_service:
     image: mongo:6.0
-    container_name: app_mongo
+    container_name: apps_mongo
     restart: always
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=bonjour_app
     networks:
-      - sae401_net
-      - deploy_db_private
+      - apps_db_private
     volumes:
       - applications_data:/data/db
+      
+  db_events_service:
+    image: mongo:6.0
+    container_name: events_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_events
+    networks:
+      - event_db_private
+    volumes:
+      - events_data:/data/db
 
 networks:
   sae401_net:
   deploy_db_private:
+    driver: bridge
+    internal: true
+  apps_db_private:
+    driver: bridge
+    internal: true
+  event_db_private:
     driver: bridge
     internal: true
 
