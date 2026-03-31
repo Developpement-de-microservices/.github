@@ -1,17 +1,24 @@
 openapi: 3.1.0
 info:
   title: SAE401 Plateforme de gestion des déploiements d'applications
-  version: "1.2"
+  version: "1.0"
   description: >-
     Projet microservices : Plateforme de gestion des déploiements dʼapplications.
-    Fusion totale du contrat global et de l'implémentation réelle du service Apps (port 5001).
     Groupe : Esteban Heschung, Florent Leclerc, Quentin Cormerais, Tristan Arnaiz.
 
 servers:
   - url: http://localhost:8080/
     description: Proxy HTTP principal
+  - url: http://localhost:5000/
+    description: Accès direct au microservice Users
   - url: http://localhost:5001/
     description: Accès direct au microservice Apps
+  - url: http://localhost:5002/
+    description: Accès direct au microservice Environments
+  - url: http://localhost:5003/
+    description: Accès direct au microservice Deployments
+  - url: http://localhost:5004/
+    description: Accès direct au microservice Events
 
 tags:
   - name: Auth
