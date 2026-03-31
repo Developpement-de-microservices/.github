@@ -231,7 +231,7 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/Application'
         '401':
-          $ref: '#/components/responses/AuthError'
+          description: Token manquant ou invalide
     post:
       tags: [Applications]
       summary: Créer une application
@@ -249,8 +249,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AppMutationResponse'
+        '401':
+          description: Token manquant ou invalide
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Champs non valide
 
   /apps/{app_id}:
     parameters:
@@ -269,6 +271,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Application'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Pas d'application avec cet ID
     patch:
@@ -288,6 +292,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AppMutationResponse'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Non trouvé
     delete:
@@ -301,6 +307,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenericDeleteResponse'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Application non trouvée
 
@@ -323,6 +331,8 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/Version'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Application non trouvée
     post:
@@ -342,6 +352,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionMutationResponse'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Application non trouvée
 
@@ -366,6 +378,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Application ou Version non trouvée
     patch:
@@ -385,6 +399,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionMutationResponse'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Version non trouvée
     delete:
@@ -398,6 +414,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenericDeleteResponse'
+        '401':
+          description: Token manquant ou invalide
         '404':
           description: Version non trouvée
 
@@ -722,33 +740,6 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
-  responses:
-    BadRequest:
-      description: Erreur de requête (JSON manquant ou champ obligatoire absent)
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message: { type: string }
-    AuthError:
-      description: Erreur d'authentification
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error: { type: string, example: "Non autorisé" }
-    InternalError:
-      description: Erreur serveur (Save failed ou Auth service down)
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error: { type: string }
-              message: { type: string }
 
   parameters:
     Page:
