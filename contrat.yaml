@@ -86,6 +86,9 @@ paths:
                   valid:
                     type: boolean
                     examples: [true]
+                  user_id:
+                    type: string
+                    format: uuid
         '401':
           description: Token manquant ou invalide
 
