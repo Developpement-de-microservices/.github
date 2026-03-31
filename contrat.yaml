@@ -520,6 +520,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Deployment'
+        '400':
+          description: Champs obligatoires manquants
+        '401':
+         description: Token manquant ou invalide
 
   /deployments/{deploymentId}:
     parameters:
@@ -535,6 +539,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Deployment'
+        '404':
+          description: Déploiement non trouvé
     patch:
       tags: [Deployments]
       summary: Mettre à jour un déploiement
@@ -555,6 +561,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Deployment'
+        '401':
+         description: Token manquant ou invalide
+        '404':
+          description: Déploiement non trouvé
 
   /deployments/{deploymentId}/rollback:
     post:
@@ -570,6 +580,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Deployment'
+        '401':
+         description: Token manquant ou invalide
 
   /deployments/{deploymentId}/events:
     get:
