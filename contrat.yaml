@@ -373,6 +373,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedEnvironments'
+        '401':
+          description: Identifiants / mot de passe invalide
     post:
       tags: [Environments]
       summary: Créer un environnement
@@ -390,6 +392,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Environment'
+        '400':
+          description: Name / type is required
+        '401':
+          description: Identifiants / mot de passe invalide
 
   /environments/{environmentId}:
     parameters:
@@ -405,6 +411,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Environment'
+        '401':
+          description: Identifiants / mot de passe invalide
     patch:
       tags: [Environments]
       summary: Modifier un environnement
@@ -422,6 +430,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Environment'
+        '401':
+          description: Identifiants / mot de passe invalide
     delete:
       tags: [Environments]
       summary: Supprimer un environnement
@@ -433,6 +443,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MutationResult'
+        '400':
+          description: ID introuvable
+        '401':
+          description: Identifiants / mot de passe invalide
 
   /deployments:
     get:
