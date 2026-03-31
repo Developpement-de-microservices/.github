@@ -100,6 +100,5 @@ Service Service    Service      Service     Service
 
 * Toutes les routes sont documentées via **OpenAPI 3.1** dans le fichier `contrat.yaml`
 * Authentification via `/auth/login` → récupération du JWT à utiliser pour les endpoints protégés
-* Pagination disponible sur les listes (`/users`, `/applications`, `/deployments`, `/events`, `/environments`)
 
 ---
