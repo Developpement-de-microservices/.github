@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: SAE401 Plateforme de gestion des déploiements d'applications
-  version: 1.0.0
+  version: "1.0"
   description: >-
     Projet microservices : Plateforme de gestion des déploiements dʼapplications.
     Groupe : 
