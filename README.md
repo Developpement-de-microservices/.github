@@ -63,7 +63,7 @@ Service Service    Service      Service     Service
 3. **Spécifications des protocoles de communication**
 
    * Communication via **HTTP / REST**
-   * Format des données : **JSON**
+   * Format des données : **JSON** et **MongoDB**
    * Pagination pour les listes (`/users`, `/applications`, `/deployments`, `/events`, `/environments`)
 
 4. **Esquisses pour l’authentification et l’autorisation**
@@ -100,6 +100,5 @@ Service Service    Service      Service     Service
 
 * Toutes les routes sont documentées via **OpenAPI 3.1** dans le fichier `contrat.yaml`
 * Authentification via `/auth/login` → récupération du JWT à utiliser pour les endpoints protégés
-* Pagination disponible sur les listes (`/users`, `/applications`, `/deployments`, `/events`, `/environments`)
 
 ---
