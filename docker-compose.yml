@@ -1,0 +1,89 @@
+services:
+  nginx:
+    build:
+        context: https://github.com/Developpement-de-microservices/.github.git
+        dockerfile: Dockerfile
+    container_name: proxy
+    ports:
+      - "8080:80"
+    volumes:
+      - proxy_data:/etc/nginx/conf.d
+    networks:
+      - sae401_net
+
+  users_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/users_service.git
+      dockerfile: app/Dockerfile
+    container_name: users_service
+    volumes:
+      - users_data:/app/data
+    networks:
+      - sae401_net
+
+  applications_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/app_service.git
+      dockerfile: app/Dockerfile
+    container_name: applications_service
+    volumes:
+      - applications_data:/app/data
+    networks:
+      - sae401_net
+
+  environments_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/env_service.git
+      dockerfile: app/Dockerfile
+    container_name: environments_service
+    volumes:
+      - environments_data:/app/data
+    networks:
+      - sae401_net
+
+  deployments_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/deploy_service.git
+      dockerfile: app/Dockerfile
+    container_name: deployments_service
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_deployer@db_deploy_service:27017/deployer_db?authSource=admin
+    networks:
+      - sae401_net
+      - deploy_db_private
+
+  events_service:
+    build:
+      context: https://github.com/Developpement-de-microservices/event_service.git
+      dockerfile: app/Dockerfile
+    container_name: events_service
+    volumes:
+      - events_data:/app/data
+    networks:
+      - sae401_net
+
+  db_deploy_service:
+    image: mongo:6.0
+    container_name: deploy_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_deployer
+    networks:
+      - deploy_db_private
+    volumes:
+      - deployments_data:/data/db
+
+networks:
+  sae401_net:
+  deploy_db_private:
+    driver: bridge
+    internal: true
+
+volumes:
+  proxy_data:
+  users_data:
+  applications_data:
+  environments_data:
+  deployments_data:
+  events_data:
