@@ -601,7 +601,7 @@ paths:
         '401':
          description: Identifiants / mot de passe invalide
         '404':
-         description: Déploiement non trouvé
+         description: Evenement non trouvé
 
 components:
   securitySchemes:
