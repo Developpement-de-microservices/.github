@@ -536,6 +536,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedEvents'
+        '401':
+         description: Identifiants / mot de passe invalide
+        '404':
+         description: Déploiement non trouvé
 
   /events:
     get:
@@ -554,6 +558,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedEvents'
+        '401':
+         description: Identifiants / mot de passe invalide
     post:
       tags: [Events]
       summary: Enregistrer un événement
@@ -573,6 +579,10 @@ paths:
                 $ref: '#/components/schemas/Event'
         '400':
           description: Champ non valide
+        '401':
+         description: Identifiants / mot de passe invalide
+        '404':
+         description: Déploiement non trouvé
 
   /events/{eventId}:
     parameters:
@@ -588,8 +598,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Event'
+        '401':
+         description: Identifiants / mot de passe invalide
         '404':
-          description: Element non trouvé
+         description: Déploiement non trouvé
 
 components:
   securitySchemes:
