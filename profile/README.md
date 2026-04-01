@@ -48,16 +48,7 @@ Le projet est basé sur un **document de conception détaillé**, incluant :
 
    * Représente les interactions et les flux de données
 
-```text
-          +----------------+
-          |   Proxy 8080   |
-          +--------+-------+
-                   |
-   ----------------------------------------
-   |       |           |           |       |
-Users   Apps      Environments Deployments Events
-Service Service    Service      Service     Service
-```
+![schema](https://github.com/Developpement-de-microservices/.github/blob/main/schema_docker.jpg)
 
 
 3. **Spécifications des protocoles de communication**
