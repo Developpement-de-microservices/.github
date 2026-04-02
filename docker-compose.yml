@@ -16,10 +16,11 @@ services:
       context: https://github.com/Developpement-de-microservices/users_service.git
       dockerfile: app/Dockerfile
     container_name: users_service
-    volumes:
-      - users_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_users@db_users_service:27017/users_db?authSource=admin
     networks:
       - sae401_net
+      - users_db_private
 
   applications_service:
     build:
@@ -113,6 +114,18 @@ services:
     volumes:
       - environments_data:/data/db
 
+  db_users_service:
+    image: mongo:6.0
+    container_name: users_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_users
+    networks:
+      - users_db_private
+    volumes:
+      - users_data:/data/db
+
 networks:
   sae401_net:
   deploy_db_private:
@@ -125,6 +138,9 @@ networks:
     driver: bridge
     internal: true
   env_db_private:
+    driver: bridge
+    internal: true
+  users_db_private:
     driver: bridge
     internal: true
 
