@@ -277,7 +277,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AppMutationResponse'
+              $ref: '#/components/schemas/ApplicationMutationStrict'
       responses:
         '200':
           description: Application modifiée
@@ -378,7 +378,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VersionMutationResponse'
+              $ref: '#/components/schemas/VersionMutationStrict'
       responses:
         '200':
           description: Version modifiée
@@ -616,6 +616,8 @@ paths:
       tags: [Deployments, Events]
       summary: Consulter les événements d'un déploiement
       operationId: listDeploymentEvents
+      parameters:
+        - $ref: '#/components/parameters/DeploymentId'
       responses:
         '200':
           description: Liste paginée des événements du déploiement
@@ -946,6 +948,14 @@ components:
         repositoryUrl: { type: string }
         latestVersion: { type: string }
 
+    ApplicationMutationStrict:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        repositoryUrl: { type: string }
+        latestVersion: { type: string }
+
     AppMutationResponse:
       type: object
       properties:
@@ -979,6 +989,14 @@ components:
       properties:
         version: { type: string }
         status: { type: string, default: "DRAFT" }
+        changelog: { type: string }
+        versionUrl: { type: string }
+
+    VersionMutationStrict:
+      type: object
+      properties:
+        version: { type: string }
+        status: { type: string }
         changelog: { type: string }
         versionUrl: { type: string }
 
