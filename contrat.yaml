@@ -616,10 +616,6 @@ paths:
       tags: [Deployments, Events]
       summary: Consulter les événements d'un déploiement
       operationId: listDeploymentEvents
-      parameters:
-        - $ref: '#/components/parameters/DeploymentId'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
       responses:
         '200':
           description: Liste paginée des événements du déploiement
