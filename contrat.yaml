@@ -594,23 +594,6 @@ paths:
         '404':
           description: Déploiement non trouvé
 
-  /deployments/{deploymentId}/rollback:
-    post:
-      tags: [Deployments]
-      summary: Lancer un rollback sur un déploiement
-      operationId: rollbackDeployment
-      parameters:
-        - $ref: '#/components/parameters/DeploymentId'
-      responses:
-        '200':
-          description: Rollback déclenché
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Deployment'
-        '401':
-          description: Token manquant ou invalide
-
   /deployments/{deploymentId}/events:
     get:
       tags: [Deployments, Events]
