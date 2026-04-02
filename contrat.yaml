@@ -86,9 +86,6 @@ paths:
                   valid:
                     type: boolean
                     examples: [true]
-                  user_id:
-                    type: string
-                    format: uuid
         '401':
           description: Token manquant ou invalide
 
@@ -217,19 +214,19 @@ paths:
   /apps:
     get:
       tags: [Applications]
-      summary: Lister les applications (Dictionnaire)
-      description: Retourne un dictionnaire complet des applications indexées par leur UUID.
+      summary: Lister les applications
+      description: Retourne la liste complète de toutes les applications stockées en base.
       responses:
         '200':
-          description: Dictionnaire des applications
+          description: Liste des applications
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   $ref: '#/components/schemas/Application'
         '401':
-          description: Token manquant ou invalide
+          description: Token manquant ou format invalide
     post:
       tags: [Applications]
       summary: Créer une application
@@ -242,22 +239,22 @@ paths:
               $ref: '#/components/schemas/ApplicationCreateStrict'
       responses:
         '201':
-          description: Application créée avec succès
+          description: Application ajoutée
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppMutationResponse'
-        '401':
-          description: Token manquant ou invalide
+                $ref: '#/components/schemas/AppCreationResponse'
         '400':
-          description: Champs non valide
+          description: Le champ 'name' est obligatoire
+        '401':
+          description: Non autorisé
 
   /apps/{app_id}:
     parameters:
       - name: app_id
         in: path
         required: true
-        schema: { type: string, format: uuid }
+        schema: { type: string }
     get:
       tags: [Applications]
       summary: Détails d'une application
@@ -269,8 +266,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Application'
-        '401':
-          description: Token manquant ou invalide
         '404':
           description: Pas d'application avec cet ID
     patch:
@@ -282,16 +277,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AppUpdate'
+              $ref: '#/components/schemas/AppMutationResponse'
       responses:
         '200':
-          description: Modification réussie
+          description: Application modifiée
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AppMutationResponse'
-        '401':
-          description: Token manquant ou invalide
+        '400':
+          description: Corps de requête manquant ou aucune donnée valide
         '404':
           description: Non trouvé
     delete:
@@ -300,13 +295,11 @@ paths:
       operationId: deleteApplication
       responses:
         '200':
-          description: Suppression réussie
+          description: Application et ses versions supprimées
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenericDeleteResponse'
-        '401':
-          description: Token manquant ou invalide
         '404':
           description: Application non trouvée
 
@@ -315,22 +308,20 @@ paths:
       - name: app_id
         in: path
         required: true
-        schema: { type: string, format: uuid }
+        schema: { type: string }
     get:
       tags: [Applications]
-      summary: Lister les versions d'une application (Dictionnaire)
+      summary: Lister les versions d'une application
       operationId: listApplicationVersions
       responses:
         '200':
-          description: Dictionnaire des versions
+          description: Liste des versions liées à l'application
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   $ref: '#/components/schemas/Version'
-        '401':
-          description: Token manquant ou invalide
         '404':
           description: Application non trouvée
     post:
@@ -349,9 +340,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VersionMutationResponse'
-        '401':
-          description: Token manquant ou invalide
+                $ref: '#/components/schemas/VersionCreationResponse'
+        '400':
+          description: Le champ 'version' est obligatoire
         '404':
           description: Application non trouvée
 
@@ -360,11 +351,11 @@ paths:
       - name: app_id
         in: path
         required: true
-        schema: { type: string, format: uuid }
+        schema: { type: string }
       - name: version_id
         in: path
         required: true
-        schema: { type: string, format: uuid }
+        schema: { type: string }
     get:
       tags: [Applications]
       summary: Détails d'une version
@@ -376,10 +367,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
-        '401':
-          description: Token manquant ou invalide
         '404':
-          description: Application ou Version non trouvée
+          description: Version non trouvée
     patch:
       tags: [Applications]
       summary: Modifier une version
@@ -389,7 +378,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VersionUpdate'
+              $ref: '#/components/schemas/VersionMutationResponse'
       responses:
         '200':
           description: Version modifiée
@@ -397,8 +386,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VersionMutationResponse'
-        '401':
-          description: Token manquant ou invalide
         '404':
           description: Version non trouvée
     delete:
@@ -407,13 +394,11 @@ paths:
       operationId: deleteVersion
       responses:
         '200':
-          description: Suppression réussie
+          description: Version supprimée
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenericDeleteResponse'
-        '401':
-          description: Token manquant ou invalide
         '404':
           description: Version non trouvée
 
@@ -951,98 +936,83 @@ components:
     # --- APPS (Sync implementation) ---
     Application:
       type: object
-      additionalProperties: false
       properties:
-        id: { type: string, format: uuid }
+        _id: { type: string, format: uuid }
         name: { type: string }
         description: { type: string }
-        repositoryUrl: { type: string, format: uri }
-        ownerId: { type: string, format: uuid }
+        repositoryUrl: { type: string }
+        ownerId: { type: string }
         latestVersion: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required: [id, name, createdAt, updatedAt]
 
     ApplicationCreateStrict:
       type: object
-      additionalProperties: false
       required: [name]
       properties:
         name: { type: string }
         description: { type: string }
-        repositoryUrl: { type: string, format: uri }
-        ownerId: { type: string, format: uuid }
-        latestVersion: { type: string }
-
-    AppUpdate:
-      type: object
-      additionalProperties: false
-      properties:
-        name: { type: string }
-        description: { type: string }
-        repositoryUrl: { type: string, format: uri }
-        ownerId: { type: string, format: uuid }
+        repositoryUrl: { type: string }
         latestVersion: { type: string }
 
     AppMutationResponse:
       type: object
-      additionalProperties: false
       properties:
         id: { type: string }
-        message: { type: string }
+        message: { type: string, examples: ["Application modifiée"] }
+        app: { $ref: '#/components/schemas/Application' }
+      
+    AppCreationResponse:
+      type: object
+      properties:
+        id: { type: string }
+        message: { type: string, examples: ["Application ajoutée"] }
         app: { $ref: '#/components/schemas/Application' }
 
     Version:
       type: object
-      additionalProperties: false
       properties:
-        id: { type: string, format: uuid }
-        applicationId: { type: string, format: uuid }
-        status: { type: string }
+        _id: { type: string, format: uuid }
+        applicationId: { type: string }
+        status: { type: string, examples: ["DRAFT"] }
         version: { type: string }
         changelog: { type: string }
-        versionUrl: { type: string, format: uri }
+        versionUrl: { type: string }
         ownerId: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required: [id, applicationId, version, status, createdAt, updatedAt]
 
     VersionCreateStrict:
       type: object
-      additionalProperties: false
       required: [version]
       properties:
         version: { type: string }
         status: { type: string, default: "DRAFT" }
         changelog: { type: string }
-        versionUrl: { type: string, format: uri }
-        ownerId: { type: string }
-
-    VersionUpdate:
-      type: object
-      additionalProperties: false
-      properties:
-        status: { type: string }
-        version: { type: string }
-        changelog: { type: string }
-        versionUrl: { type: string, format: uri }
-        ownerId: { type: string }
+        versionUrl: { type: string }
 
     VersionMutationResponse:
       type: object
-      additionalProperties: false
       properties:
         id: { type: string }
         applicationId: { type: string }
-        message: { type: string }
+        message: { type: string, examples: ["Version modifiée"] }
         version: { $ref: '#/components/schemas/Version' }
+
+    VersionCreationResponse:
+      type: object
+      properties:
+        id: { type: string }
+        applicationId: { type: string }
+        message: { type: string, examples: ["Version ajoutée"] }
+        version: { $ref: '#/components/schemas/Version' }
+
 
     GenericDeleteResponse:
       type: object
-      additionalProperties: false
       properties:
         id: { type: string }
-        message: { type: string }
+        message: { type: string, examples: ["Version supprimée"] }
 
     # --- ENVIRONMENTS ---
     EnvironmentType:
