@@ -16,3 +16,18 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 ### Fixed
 - N/A (première version)
+
+## [2.0] - 02/04/2026
+### Added
+- Ajout d'un conteneur avec base de donnée MongoDB par microservice.
+- Création de réseaux locaux entre les conteneurs et leurs bases de donnée respectives.
+
+### Changed
+- Changement du système de stockage des microservices :
+  - Passage de JSON local à MongoDB
+- Suppression des volumes partagés
+- Nouveaux réseaux spécifiques à chaques conteneurs.
+- Modification du contrat d'interface pour correspondre à notre migration MongoDB.
+
+### Fixed
+- N/A

@@ -54,12 +54,12 @@ Le projet est basé sur un **document de conception détaillé**, incluant :
 3. **Spécifications des protocoles de communication**
 
    * Communication via **HTTP / REST**
-   * Format des données : **JSON** et **MongoDB**
+   * Format des données : **MongoDB**
    * Pagination pour les listes (`/users`, `/applications`, `/deployments`, `/events`, `/environments`)
 
 4. **Esquisses pour l’authentification et l’autorisation**
 
-   * Authentification via **JWT** sur `/auth/login`
+   * Authentification via **JWT Dynamique** sur `/auth/login`
    * Rôles utilisateurs : `ADMIN`, `USER`
    * Protection des endpoints via vérification du JWT et des permissions
 
@@ -69,7 +69,7 @@ Le projet est basé sur un **document de conception détaillé**, incluant :
 
 * Chaque microservice est indépendant et conteneurisé avec **Docker**
 * Un **proxy** (Nginx) expose tous les services sur le port **8080**
-* Communication entre microservices via **API REST** et **JSON**
+* Communication entre microservices via **API REST**
 * Authentification et autorisation via **JWT**
 
 ---

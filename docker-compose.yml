@@ -16,29 +16,32 @@ services:
       context: https://github.com/Developpement-de-microservices/users_service.git
       dockerfile: app/Dockerfile
     container_name: users_service
-    volumes:
-      - users_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_users@db_users_service:27017/users_db?authSource=admin
     networks:
       - sae401_net
+      - users_db_private
 
   applications_service:
     build:
       context: https://github.com/Developpement-de-microservices/app_service.git
       dockerfile: app/Dockerfile
     container_name: applications_service
-    volumes:
-      - applications_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_app@db_app_service:27017/app_db?authSource=admin
     networks:
       - sae401_net
+      - apps_db_private
 
   environments_service:
     build:
       context: https://github.com/Developpement-de-microservices/env_service.git
       dockerfile: app/Dockerfile
     container_name: environments_service
-    volumes:
-      - environments_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_env@db_env_service:27017/env_db?authSource=admin
     networks:
+      - env_db_private
       - sae401_net
 
   deployments_service:
@@ -57,10 +60,11 @@ services:
       context: https://github.com/Developpement-de-microservices/event_service.git
       dockerfile: app/Dockerfile
     container_name: events_service
-    volumes:
-      - events_data:/app/data
+    environment:
+      - MONGO_URI=mongodb://admin:bonjour_events@db_events_service:27017/events_db?authSource=admin
     networks:
       - sae401_net
+      - event_db_private
 
   db_deploy_service:
     image: mongo:6.0
@@ -74,9 +78,69 @@ services:
     volumes:
       - deployments_data:/data/db
 
+  db_app_service:
+    image: mongo:6.0
+    container_name: apps_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_app
+    networks:
+      - apps_db_private
+    volumes:
+      - applications_data:/data/db
+      
+  db_events_service:
+    image: mongo:6.0
+    container_name: events_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_events
+    networks:
+      - event_db_private
+    volumes:
+      - events_data:/data/db
+
+  db_env_service:
+    image: mongo:6.0
+    container_name: env_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_env
+    networks:
+      - env_db_private
+    volumes:
+      - environments_data:/data/db
+
+  db_users_service:
+    image: mongo:6.0
+    container_name: users_mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=bonjour_users
+    networks:
+      - users_db_private
+    volumes:
+      - users_data:/data/db
+
 networks:
   sae401_net:
   deploy_db_private:
+    driver: bridge
+    internal: true
+  apps_db_private:
+    driver: bridge
+    internal: true
+  event_db_private:
+    driver: bridge
+    internal: true
+  env_db_private:
+    driver: bridge
+    internal: true
+  users_db_private:
     driver: bridge
     internal: true
 
